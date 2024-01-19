@@ -22,7 +22,8 @@ export default function LoginPage() {
     if (signInData?.error) {
       console.log(signInData.error);
     } else {
-      router.push("/todoList");
+      router.refresh();
+      router.push("/");
     }
     console.log(signInData);
   };
