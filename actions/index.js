@@ -1,4 +1,6 @@
 export async function createNewUser(formData) {
+  console.log(formData);
+
   try {
     const response = await fetch("http://localhost:3000/api/addUsers", {
       method: "POST",

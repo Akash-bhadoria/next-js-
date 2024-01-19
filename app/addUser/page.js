@@ -1,6 +1,6 @@
 "use client";
 import { useForm } from "react-hook-form";
-// import { createNewUser } from "@/actions";
+import { createNewUser } from "../../actions";
 import Modal from "react-modal";
 import "./style.css";
 import { useState } from "react";
@@ -22,23 +22,14 @@ export default function AddUser() {
     setModalIsOpen(false);
   };
 
-  async function createNewUser(formData) {
-    const response = await fetch("http://localhost:3000/api/addUsers", {
-      method: "POST",
-      body: JSON.stringify(formData),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-  }
-
   async function onSubmit(data) {
     try {
       let res = await createNewUser(data);
       if (res && res.status == 200) {
         setValue("name", "");
         setValue("email", "");
-        setValue("mobile", "");
+        // setValue("mobile", "");
+        setValue("password", "");
       }
     } catch (error) {
       console.error("Error creating user:", error.message);
@@ -65,9 +56,12 @@ export default function AddUser() {
           <label>Email</label>
           <input {...register("email", { required: true })} />
           {errors?.email && <span>This field is required</span>}
-          <label>Mobile</label>
+          {/* <label>Mobile</label>
           <input {...register("mobile", { required: true })} />
-          {errors?.mobile && <span>This field is required</span>}
+          {errors?.mobile && <span>This field is required</span>} */}
+          <label>Password</label>
+          <input {...register("password", { required: true })} />
+          {errors?.password && <span>This field is required</span>}
           <input type="submit" />
         </form>
       </Modal>

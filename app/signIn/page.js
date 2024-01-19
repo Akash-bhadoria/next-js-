@@ -29,7 +29,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="container border-2 border-black mt-20">
       <h1>Login Page</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -52,6 +52,7 @@ export default function LoginPage() {
         </div>
         <button type="submit">Login</button>
       </form>
+      <button onClick={() => signIn("google")}>Sign In With Google</button>
     </div>
   );
 }
