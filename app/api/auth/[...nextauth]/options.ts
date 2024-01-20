@@ -3,8 +3,16 @@ import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { db } from "../../../../lib/db";
+import bcrypt from "bcrypt";
+import { error } from "console";
 
 export const options: NextAuthOptions = {
+  // adapter: PrismaAdapter(db),
+  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: "jwt" },
+  pages: {
+    signIn: "/signIn",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
@@ -37,6 +45,15 @@ export const options: NextAuthOptions = {
           return null;
         }
 
+        const validPassword = await bcrypt.compare(
+          credentials?.password,
+          existingUser?.password
+        );
+
+        if (!validPassword) {
+          return null;
+        }
+
         return {
           id: existingUser.id + "", // `${existingUser.id}`
           email: existingUser.email,
@@ -45,13 +62,33 @@ export const options: NextAuthOptions = {
       },
     }),
   ],
-  adapter: PrismaAdapter(db),
-  secret: process.env.NEXTAUTH_SECRET,
-  session: { strategy: "jwt" },
-  pages: {
-    signIn: "/signIn",
-  },
   callbacks: {
+    async signIn({ account, profile }) {
+      try {
+        if (account.provider === "google") {
+          if (!profile?.email) {
+            throw new Error("No Profile");
+          }
+
+          await db.user.upsert({
+            where: { email: profile.email },
+            update: {
+              name: profile.name,
+            },
+            create: {
+              email: profile.email as string,
+              name: profile.name as string,
+            },
+          });
+        }
+
+        return true;
+      } catch (error) {
+        // Handle the error appropriately, e.g., log it or return false
+        console.error("Error during signIn:", error);
+        return false;
+      }
+    },
     async jwt({ token, user }) {
       if (user) {
         return {
@@ -69,6 +106,9 @@ export const options: NextAuthOptions = {
           username: token.name,
         },
       };
+    },
+    async redirect({ url, baseUrl }) {
+      return Promise.resolve(baseUrl);
     },
   },
 };
